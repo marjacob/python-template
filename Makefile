@@ -25,6 +25,11 @@ venv_python   := $(venv_exec) python
 ##### Functions
 ##############################################################################
 
+# Build a virtual environment.
+define venv-create =
+	@test -d $(venv_path) || virtualenv -p $(python_bin) $(venv_path)
+endef
+
 # Generate a pinned package list.
 define venv-pip-freeze =
 	$(venv_pip) freeze > $(req_pinned)
@@ -32,7 +37,7 @@ endef
 
 # Install updated versions of all packages.
 define venv-pip-install =
-	$(venv_pip) install -Ur $(req_floating)
+	$(venv_pip) install -Ur $(1)
 	touch $(venv_activate)
 endef
 
@@ -42,18 +47,18 @@ endef
 # Build the virtual environment.
 $(venv_path): $(venv_activate)
 $(venv_activate): $(req_floating) Makefile
-	@test -d $(venv_path) || virtualenv -p $(python_bin) $(venv_path)
-	@$(venv-pip-install)
+	@$(call venv-create)
+	@$(call venv-pip-install,$(req_floating))
 
 # Save a list of all currently installed packages with pinned version numbers.
 .PHONY: freeze
 freeze: $(venv_path)
-	@$(venv-pip-freeze)
+	@$(call venv-pip-freeze)
 
 # Install the latest version of all packages.
 .PHONY: upgrade
 upgrade: $(venv_path)
-	@$(venv-pip-install)
+	@$(call venv-pip-install,$(req_floating))
 
 # Generate linting report.
 .PHONY: lint
@@ -64,6 +69,11 @@ lint: $(venv_path)
 .PHONY: run
 run: $(venv_path)
 	@$(venv_python) -tt src/main.py
+
+.PHONY: restore
+restore: clean
+	@$(call venv-create)
+	@$(call venv-pip-install,$(req_pinned))
 
 # Destroy the virtual environment and cache files.
 .PHONY: clean
