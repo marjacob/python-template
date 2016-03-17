@@ -24,3 +24,36 @@ You may skip this step if you have `virtualenv` available already. Otherwise, is
 
 ## Using the template
 The simplest way to use the template is to just fork this repository on GitHub, rename it and clone it to your local machine.
+
+### Using the Makefile
+
+If have just cloned this repository or a project using this `Makefile`, the first thing you want to do is to download and install all the dependencies locally in a virtual environment. You can do this by just issuing `make` inside the project directory. To add additional dependencies, add them to the `requirements-to-freeze.txt` file and issue `make` once more.
+
+	make
+	
+Under some circumstances (such as deploying to a production environment), you may want or need to deploy with specific versions of some or all project dependencies. Issuing `make freeze` writes a list of all currently installed packages and their versions to a `requirements.txt` file. This is used by `make restore` to recreate that specific environment.
+	
+	make freeze
+	
+To update all packages installed in the virtual environment, issue `make upgrade`. Don't worry, you can revert to the previously installed package versions by issuing `make freeze` before doing the upgrade, and `make restore` after the upgrade.
+	
+	make upgrade
+
+It is recommended to use tools to verify that your code meets the preferred coding standards of the Python community. See [PEP8](http://pep8.org) and [The Hitchhiker’s Guide to Python](http://docs.python-guide.org/en/latest/) for more information about that. This `Makefile` uses `pylint` by default to generate a report based on your code. You may use any tool you prefer, however.
+	
+	make lint
+	
+To execute your code inside the virtual environent, issue `make run`. Unfortunately, this command does not support any arguments (yet).
+	
+	make run
+	
+Destroy the virtual environment and rebuild it using the packages and versions specified in the `requirements.txt` file.
+	
+	make restore
+
+Destroy the virtual environment and all cache files.
+	
+	make clean
+
+## More information
+To read more about `requirements.txt` versus `requirements-to-freeze.txt`, refer to [this article](http://www.kennethreitz.org/essays/a-better-pip-workflow) by Kenneth Reitz.
