@@ -87,6 +87,3 @@ clean:
 	@$(RM) -rf $(venv_path)
 	@find src -name __pycache__ -type d -prune -exec $(RM) -rf {} \;
 
-%:
-	@:
-
