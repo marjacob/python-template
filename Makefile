@@ -21,7 +21,6 @@ venv_pip      := $(venv_exec) pip
 venv_pylint   := $(venv_exec) pylint
 venv_python   := $(venv_exec) python
 
-
 ##### Functions
 ##############################################################################
 
@@ -43,6 +42,8 @@ endef
 
 ##### Rules
 ##############################################################################
+
+default: $(venv_path)
 
 # Build the virtual environment.
 $(venv_path): $(venv_activate)
