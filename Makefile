@@ -76,9 +76,17 @@ restore: clean
 	@$(call venv-create)
 	@$(call venv-pip-install,$(req_pinned))
 
+# Perform unit tests.
+.PHONY: test
+test: $(venv_path)
+	@$(venv_exec) green --processes 1 --run-coverage -v src
+
 # Destroy the virtual environment and cache files.
 .PHONY: clean
 clean:
 	@$(RM) -rf $(venv_path)
 	@find src -name __pycache__ -type d -prune -exec $(RM) -rf {} \;
+
+%:
+	@:
 
