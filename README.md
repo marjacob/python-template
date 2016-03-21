@@ -37,6 +37,11 @@ Under some circumstances (such as deploying to a production environment), you ma
 	
 	make freeze
 
+#### Installing pinned packages
+Destroy the virtual environment and rebuild it using the packages and versions specified in the `requirements.txt` file.
+	
+	make unfreeze
+
 #### Upgrading dependencies
 To update all packages installed in the virtual environment, issue `make upgrade`. Don't worry, you can revert to the previously installed package versions by issuing `make freeze` before doing the upgrade, and `make restore` after the upgrade.
 	
@@ -47,15 +52,15 @@ It is recommended to use tools to verify that your code meets the preferred codi
 	
 	make lint
 
+#### Executing the Python REPL
+You can launch the interactive Python interpreter from inside the virtual environment.
+	
+	make repl
+
 #### Executing your code
 To execute your code inside the virtual environent, issue `make run`. Unfortunately, this command does not support any arguments (yet).
 	
 	make run
-
-#### Installing pinned packages
-Destroy the virtual environment and rebuild it using the packages and versions specified in the `requirements.txt` file.
-	
-	make restore
 
 #### You made a mess of it
 Destroy the virtual environment and all cache files.
