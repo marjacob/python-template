@@ -1,4 +1,4 @@
-SHELL = /bin/sh
+SHELL := /bin/sh
 
 ##### Variables
 ##############################################################################
@@ -14,7 +14,7 @@ req_pinned    := requirements.txt
 venv_path     := .venv
 venv_bin_path := $(venv_path)/bin
 venv_activate := $(venv_bin_path)/activate
-venv_exec     := source $(venv_activate) && exec
+venv_exec     := source $(venv_activate) && PS1="venv $$ " exec
 
 # Virtual environment tools.
 venv_pip      := $(venv_exec) pip
@@ -60,22 +60,22 @@ upgrade: $(venv_path)
 	$(venv_pip) install -Ur $(req_floating)
 	@touch $(venv_activate)
 
-# Execute a REPL inside the virtual environment.
+# Execute a REPL within the virtual environment.
 .PHONY: repl
 repl: $(venv_path)
 	@$(venv_python)
 
-# Execute the code inside the virtual environment.
+# Execute the code within the virtual environment.
 .PHONY: run
 run: $(venv_path)
-	@$(venv_python) -tt src/main.py $(filter-out $@,$(MAKECMDGOALS))
+	@$(venv_python) -tt src/main.py
+
+# Execute a shell within the virtual environment.
+.PHONY: shell
+shell: $(venv_path)
+	@$(venv_exec) $(SHELL)
 
 # Perform unit tests.
 .PHONY: test
 test: $(venv_path)
 	@$(venv_exec) green --processes 1 --run-coverage -v src
-
-# This target enables "make run" to accept arguments. This is a horrible hack.
-# See http://stackoverflow.com/a/6273809 for more information.
-%:
-	@:
