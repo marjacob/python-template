@@ -21,50 +21,44 @@ venv_pip      := $(venv_exec) pip
 venv_pylint   := $(venv_exec) pylint
 venv_python   := $(venv_exec) python
 
-##### Functions
-##############################################################################
-
-# Build a virtual environment.
-define venv-create =
-	@test -d $(venv_path) || virtualenv -p $(python_bin) $(venv_path)
-endef
-
-# Install updated versions of all packages.
-define venv-pip-install =
-	$(venv_pip) install -Ur $(1)
-	touch $(venv_activate)
-endef
-
 ##### Rules
 ##############################################################################
 
-default: $(venv_path)
-
-# Destroy the virtual environment.
-.PHONY: venv-clean
-venv-clean:
-	@$(RM) -r $(venv_path)
-
 # Build the virtual environment.
 $(venv_path): $(venv_activate)
-$(venv_activate): $(req_floating) Makefile
-	@$(call venv-create)
-	@$(call venv-pip-install,$(req_floating))
+$(venv_activate): Makefile
+	@test -d $(venv_path) || virtualenv -p $(python_bin) $(venv_path)
+	@$(venv_pip) install -Ur $(req_floating)
+	@touch $(venv_activate)
+
+# Destroy the virtual environment and cache files.
+.PHONY: clean
+clean: venv-clean
+	@$(RM) -r $(venv_path)
+	@find src -name __pycache__ -type d -prune -exec $(RM) -rf {} \;
 
 # Save a list of all currently installed packages with pinned version numbers.
 .PHONY: freeze
 freeze: $(venv_path)
-	$(venv_pip) freeze > $(req_pinned)
-
-# Install the latest version of all packages.
-.PHONY: upgrade
-upgrade: $(venv_path)
-	@$(call venv-pip-install,$(req_floating))
+	@$(venv_pip) freeze > $(req_pinned)
 
 # Generate linting report.
 .PHONY: lint
 lint: $(venv_path)
 	@$(venv_pylint) --rcfile=pylintrc --output-format=text src
+
+# Recreate the virtual environment with pinned package versions.
+.PHONY: unfreeze
+unfreeze: clean
+	@test -d $(venv_path) || virtualenv -p $(python_bin) $(venv_path)
+	$(venv_pip) install -Ur $(req_pinned)
+	@touch $(venv_activate)
+
+# Install the latest version of all non-pinned packages.
+.PHONY: upgrade
+upgrade: $(venv_path)
+	$(venv_pip) install -Ur $(req_floating)
+	@touch $(venv_activate)
 
 # Execute a REPL inside the virtual environment.
 .PHONY: repl
@@ -74,20 +68,14 @@ repl: $(venv_path)
 # Execute the code inside the virtual environment.
 .PHONY: run
 run: $(venv_path)
-	@$(venv_python) -tt src/main.py
-
-.PHONY: unfreeze
-unfreeze: clean
-	@$(call venv-create)
-	@$(call venv-pip-install,$(req_pinned))
+	@$(venv_python) -tt src/main.py $(filter-out $@,$(MAKECMDGOALS))
 
 # Perform unit tests.
 .PHONY: test
 test: $(venv_path)
 	@$(venv_exec) green --processes 1 --run-coverage -v src
 
-# Destroy the virtual environment and cache files.
-.PHONY: clean
-clean: venv-clean
-	@find src -name __pycache__ -type d -prune -exec $(RM) -rf {} \;
-
+# This target enables "make run" to accept arguments. This is a horrible hack.
+# See http://stackoverflow.com/a/6273809 for more information.
+%:
+	@:
