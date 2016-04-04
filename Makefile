@@ -33,7 +33,7 @@ $(venv_activate): Makefile
 
 # Destroy the virtual environment and cache files.
 .PHONY: clean
-clean: venv-clean
+clean:
 	@$(RM) -r $(venv_path)
 	@find src -name __pycache__ -type d -prune -exec $(RM) -rf {} \;
 
