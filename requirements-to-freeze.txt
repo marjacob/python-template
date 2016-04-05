@@ -1,3 +1,7 @@
+# Requirements
+pip
+
+# Testing
 coverage
 green
 pylint

@@ -21,12 +21,15 @@ venv_pip      := $(venv_exec) pip
 venv_pylint   := $(venv_exec) pylint
 venv_python   := $(venv_exec) python
 
+# Application
+app_root      := src
+
 ##### Rules
 ##############################################################################
 
 # Build the virtual environment.
 $(venv_path): $(venv_activate)
-$(venv_activate): Makefile
+$(venv_activate): Makefile $(req_floating)
 	@test -d $(venv_path) || virtualenv -p $(python_bin) $(venv_path)
 	@$(venv_pip) install -Ur $(req_floating)
 	@touch $(venv_activate)
@@ -35,7 +38,11 @@ $(venv_activate): Makefile
 .PHONY: clean
 clean:
 	@$(RM) -r $(venv_path)
-	@find src -name __pycache__ -type d -prune -exec $(RM) -rf {} \;
+	@find $(app_root) \
+		-name __pycache__ \
+		-type d \
+		-prune \
+		-exec $(RM) -rf {} \;
 
 # Save a list of all currently installed packages with pinned version numbers.
 .PHONY: freeze
@@ -45,7 +52,7 @@ freeze: $(venv_path)
 # Generate linting report.
 .PHONY: lint
 lint: $(venv_path)
-	@$(venv_pylint) --rcfile=pylintrc --output-format=text src
+	@$(venv_pylint) --rcfile=pylintrc --output-format=text $(app_root)
 
 # Recreate the virtual environment with pinned package versions.
 .PHONY: unfreeze
@@ -68,7 +75,7 @@ repl: $(venv_path)
 # Execute the code within the virtual environment.
 .PHONY: run
 run: $(venv_path)
-	@$(venv_python) -tt src/main.py
+	@$(venv_python) -tt $(app_root)/main.py
 
 # Execute a shell within the virtual environment.
 .PHONY: shell
@@ -78,4 +85,4 @@ shell: $(venv_path)
 # Perform unit tests.
 .PHONY: test
 test: $(venv_path)
-	@$(venv_exec) green --processes 1 --run-coverage -v src
+	@$(venv_exec) green --processes 1 --run-coverage -v $(app_root)
